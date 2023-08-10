@@ -1,0 +1,23 @@
+---
+- name: Deploy your-app on Kubernetes
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Build Docker image
+      shell: docker build -t debugging-the-cake-app:latest /mnt/c/Users/AVASILAC/Downloads/debugging_the_cake_portal-master/debugging_the_cake_portal-master/src/debugging_cake_portal
+
+    - name: Authenticate with Google Cloud Registry
+      shell: gcloud auth configure-docker --quiet
+
+    - name: Tag Docker image
+      shell: docker tag debugging-the-cake-app:latest gcr.io/webapp-deploy-395414/debugging-the-cake-app:latest
+
+    - name: Push Docker image to Google Cloud Registry
+      shell: docker push gcr.io/webapp-deploy-395414/debugging-the-cake-app:latest
+
+    - name: Apply Kubernetes Deployment
+      shell: kubectl create deployment debugging-the-cake--deployment --image=gcr.io/webapp-deploy-395414/debugging-the-cake-app:latest
+
+    - name: Apply Kubernetes HPA
+      shell: kubectl autoscale deployment debugging-the-cake--deployment --cpu-percent=70 --min=2 --max=5
